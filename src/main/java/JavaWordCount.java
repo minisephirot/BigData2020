@@ -34,11 +34,6 @@ public final class JavaWordCount {
 
     System.setProperty("hadoop.home.dir", "C:\\winutil\\");
 
-    if (args.length < 1) {
-      System.err.println("Usage: JavaWordCount <file>");
-      System.exit(1);
-    }
-
     //Démarrage de Spark en Java
     SparkSession spark = SparkSession
             .builder()
@@ -46,30 +41,33 @@ public final class JavaWordCount {
             .config("spark.master", "local")
             .getOrCreate();
 
-    //Parsing du .txt en JavaRDD pour travailler dessus
-    JavaRDD<String> lines = spark.read().textFile(args[0]).javaRDD();
+    //Etape 1 : Parsing des .txt et des stopwords en JavaRDD pour travailler dessus
+    JavaRDD<String> lines = spark.read().textFile("src/main/resources/cf/cf2010.txt").javaRDD(); //Pour l'instant sur un document, il suffit de changer en cf* ensuite
+    JavaRDD<String> stopwords = spark.read().textFile("src/main/resources/french-stopwords.txt").javaRDD();
 
-    //1 mots par ligne, on coupe sur les espaces, ensuite on retire les lignes vides
+    //Etape 2: un mot par element, on sort les espaces, les lignes vides, puis la ponctuation
     JavaRDD<String> words = lines.flatMap(data -> Arrays.asList(SPACE.split(data)).iterator());
     words = words.filter(data -> !data.isEmpty());
-    words.foreach(data -> data = data.replace("[.!?-]",""));
-
+    words.foreach(data -> data = data.replace(" |.|,|+|?|!",""));
     words.foreach(data -> System.out.println("Mot : "+data));
 
-    //1 occurence par mot
-//    JavaPairRDD<String, Integer> ones = wordsNoLine.mapToPair(s -> new Tuple2<>(s, 1));
-//    ones.foreach(data -> System.out.println("Mot : " + data._1() + " , Ocurrence :" + data._2()));
-//
-//    //Somme des clés
-//    JavaPairRDD<String, Integer> counts = ones.reduceByKey((i1, i2) -> i1 + i2);
-//    counts.foreach(data -> System.out.println("Mot : " + data._1() + " , Ocurrence :" + data._2()));
+    System.out.println("Nombre de mots dans les data : "+words.count());
+    //Etape 3 : Filtrage des stopwords (On le fais avant de finir l'étape 2 car plus rapide qu'avec les occurences et plus efficace)
+    words = words.subtract(stopwords);
+    System.out.println("Nombre de mots dans les data : "+words.count());
 
-    //Filtrage des stopwords
-//    JavaPairRDD<String, Integer> countsnostopwords = ones.filter(data -> !data._1.isEmpty());
-//      countsnostopwords.foreach(data -> System.out.println("Mot : " + data._1() + " , Ocurrence :" + data._2()));
+      //On associe une occurence a chaque mots pour compter ensuite
+    JavaPairRDD<String, Integer> ones = words.mapToPair(s -> new Tuple2<>(s, 1));
+    ones.foreach(data -> System.out.println("Mot : " + data._1() + " , Ocurrence :" + data._2()));
 
-    //Récupère les 10 premiers
-//    List<Tuple2<String, Integer>> topdix = counts.top(10);
+    //On somme les occurences sur les clés
+    JavaPairRDD<String, Integer> counts = ones.reduceByKey((i1, i2) -> i1 + i2);
+    counts.foreach(data -> System.out.println("Mot : " + data._1() + " , Ocurrence :" + data._2()));
+
+
+
+    //Etape 4 : Récupèrer les 10 premiers
+    //List<Tuple2<String, Integer>> topdix = counts.top(10);
     //topdix.forEach(data -> System.out.println("Mot : " + data._1() + " , Ocurrence :" + data._2()));
 
     spark.stop();
