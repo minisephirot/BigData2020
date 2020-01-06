@@ -18,6 +18,8 @@
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 
@@ -27,7 +29,7 @@ import java.util.regex.Pattern;
 
 public final class JavaWordCount {
 
-    private static final Pattern SPACE = Pattern.compile(" +");
+    private static final Pattern SPACE = Pattern.compile("\\s+");
 
     public static void main(String[] args){
 
@@ -46,9 +48,12 @@ public final class JavaWordCount {
         JavaRDD<String> stopwords = spark.read().textFile("src/main/resources/french-stopwords.txt").javaRDD();
         JavaRDD<String> stopwordsMaj = stopwords.map(StringUtils::capitalize);
 
+
         //Etape 2: un mot par element, on sort les espaces, les lignes vides, puis la ponctuation
         JavaRDD<String> words = lines.flatMap(data -> Arrays.asList(SPACE.split(data)).iterator());
+        Dataset<String> test = spark.createDataset(words.rdd(),Encoders.STRING());
 
+        words = words.map(data -> data.replaceAll("[^\\/ éèàù’\\w]",""));
         words = words.filter(data -> !data.isEmpty());
         words = words.filter(data -> !data.matches("\\W|\\d") );
 
@@ -60,11 +65,11 @@ public final class JavaWordCount {
 
         //On associe une occurence a chaque mots pour compter ensuite
         JavaPairRDD<String, Integer> ones = words.mapToPair(s -> new Tuple2<>(s, 1));
-        ones.foreach(data -> System.out.println("Mot :" + data._1() + " = " + data._2()));
+        //ones.foreach(data -> System.out.println("Mot :" + data._1() + " = " + data._2()));
 
         //On somme les occurences sur les clés
         JavaPairRDD<String, Integer> counts = ones.reduceByKey((i1, i2) -> i1 + i2);
-        counts.foreach(data -> System.out.println("Mot :" + data._1() + " = " + data._2()));
+        //counts.foreach(data -> System.out.println("Mot : " + data._1() + " = " + data._2()));
 
         //Etape 4 : Récupèrer les 10 premiers
         JavaPairRDD<Integer, String> reversed = counts.mapToPair(t -> new Tuple2<>(t._2, t._1));
