@@ -26,6 +26,8 @@ Nous avons fais chacun une moitié de l'exercice et avons passé l'autre moitié
   - cp : le dossier du sujet contenant les logs cp.txt
   - french-stopwords.txt : Les stopwords.
 
+## Utilisation
+
 
 ## Résultats
 
