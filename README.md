@@ -29,6 +29,9 @@ Nous avons fais chacun une moitié de l'exercice et avons passé l'autre moitié
   - french-stopwords.txt : Les stopwords.
 
 ## Utilisation
+
+## Fonctionnement
+
 Pour chaque partie la première étape est de créer une session Spark pour les différentes manipulations.
 ####Partie 1 à 4 :
 Dans cette partie on commence par créer des **JavaRDD** à partir des différents fichiers que l'on veut étudier :
