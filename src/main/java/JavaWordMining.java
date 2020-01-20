@@ -25,10 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -49,10 +46,6 @@ public final class JavaWordMining {
                 .config("spark.master", "local")
                 .getOrCreate();
 
-        //Etape 1 : Parsing des .txt et des stopwords en transactions pour travailler dessus, on retirera aussi la ponctuation et les espaces vides
-        File cf = new File("src/main/resources/cf");
-        File cp = new File("src/main/resources/cp");
-
         //Etape 2: Filtrage des stopwords dans chaques transactions
         String load = new String(Files.readAllBytes(Paths.get("src/main/resources/french-stopwords.txt")));
         //Transformation en tableau de string pour chaque mot
@@ -66,8 +59,37 @@ public final class JavaWordMining {
         //Définition de la colonne crée à la fin
         remover.setOutputCol("new");
 
-        wordMining(cf,spark,remover);
-        //wordMining(cp,spark,remover);
+        String rep = "";
+
+        Scanner sc = new Scanner(System.in);
+
+        while (!rep.equals("1") && !rep.equals("2") && !rep.equals("3")) {
+
+            System.out.println("Faite votre choix :");
+            System.out.println("1 - Fichiers cp et cf");
+            System.out.println("2 - Fichiers cp");
+            System.out.println("3 - Fichiers cf");
+
+            rep = sc.nextLine();
+        }
+
+        if(rep.equals("1")){
+            //Etape 1 : Parsing des .txt et des stopwords en transactions pour travailler dessus, on retirera aussi la ponctuation et les espaces vides
+            File cf = new File("src/main/resources/cf");
+            File cp = new File("src/main/resources/cp");
+
+            wordMining(cf,spark,remover);
+            wordMining(cp,spark,remover);
+        } else if(rep.equals("2")) {
+            File cp = new File("src/main/resources/cp");
+
+            wordMining(cp,spark,remover);
+        } else {
+            File cf = new File("src/main/resources/cf");
+
+            wordMining(cf,spark,remover);
+        }
+
 
         spark.stop();
     }
@@ -95,16 +117,58 @@ public final class JavaWordMining {
         //Drop de l'ancienne colonne
         lines = lines.drop("items");
 
-        //Application de FPGrowth
-        FPGrowthModel model = new FPGrowth()
-                .setItemsCol("new")
-                .setMinSupport(minsup)
-                .setMinConfidence(minconf)
-                .fit(lines);
+
+
+        String rep = "";
+
+        Scanner sc = new Scanner(System.in);
+
+        while (!rep.equals("1") && !rep.equals("2")) {
+
+            System.out.println("Faite votre choix :");
+            System.out.println("1 - Min support");
+            System.out.println("2 - Min Confidence");
+
+            rep = sc.nextLine();
+        }
+
+        float value = -1;
+
+        while (value <= 0 || value > 1  ) {
+
+            System.out.println("Entrez une valeur supérieur à 0 et 1 :");
+
+            String  r = sc.nextLine();
+
+            try {
+                value = Float.parseFloat(r);
+            } catch (NumberFormatException e) {
+            }
+
+        }
+
+        FPGrowthModel model;
+
+        if(rep.equals("1")) {
+            //Application de FPGrowth
+            model = new FPGrowth()
+                    .setItemsCol("new")
+                    .setMinSupport(value)
+                    .fit(lines);
+            model.freqItemsets().orderBy(functions.col("freq").desc()).show(false);
+
+        } else {
+            //Application de FPGrowth
+            model = new FPGrowth()
+                    .setItemsCol("new")
+                    .setMinConfidence(value)
+                    .fit(lines);
+
+            model.associationRules().orderBy(functions.col("confidence").desc()).show(false);
+
+        }
 
         //Affichage.
-        model.freqItemsets().orderBy(functions.col("freq").desc()).show(false);
-        model.associationRules().orderBy(functions.col("confidence").desc()).show(false);
     }
 
 }

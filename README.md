@@ -27,6 +27,23 @@ Nous avons fais chacun une moitié de l'exercice et avons passé l'autre moitié
   - french-stopwords.txt : Les stopwords.
 
 ## Utilisation
+Pour chaque partie la première étape est de créer une session Spark pour les différentes manipulations.
+####Partie 1 à 4 :
+Dans cette partie on commence par créer des **JavaRDD** à partir des différents fichiers que l'on veut étudier :
+
+```JavaRDD<String> linescf = spark.read().textFile("src/main/resources/cf/*").javaRDD();```
+
+On peut, grâce à '*' lire l'integralité des fichiers présents à l'endroit du chemin renseigné.
+De la  même manière nous chargeons la liste des mots à retirer des différents documents. On ajoute à cette liste tous les mots déjâ présent mais
+avec une majuscule afin de ne pas avoir de soucis de casse :
+
+``stopwords = stopwords.union(stopwords.map(StringUtils::capitalize));``
+
+Ensuite, nous transformons les documents afin d'obtenir un tableau de String. Pour se faire on sépare le document de base
+en fonction de la regex "**\s**" qui détecte tous les genres d'espace blanc.
+
+Puis on applique un filtre afin de ne pas garder les différents nombres présents
+
 
 
 ## Résultats

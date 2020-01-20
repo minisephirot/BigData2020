@@ -23,6 +23,7 @@ import scala.Tuple2;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public final class JavaWordCount {
@@ -40,15 +41,41 @@ public final class JavaWordCount {
                 .config("spark.master", "local")
                 .getOrCreate();
 
-        //Etape 1 : Parsing des .txt et des stopwords en JavaRDD pour travailler dessus
-        JavaRDD<String> linescf = spark.read().textFile("src/main/resources/cf/*").javaRDD();
-        JavaRDD<String> linescp = spark.read().textFile("src/main/resources/cp/*").javaRDD();
         JavaRDD<String> stopwords = spark.read().textFile("src/main/resources/french-stopwords.txt").javaRDD();
         stopwords = stopwords.union(stopwords.map(StringUtils::capitalize));
 
-        wordCount(linescf,stopwords);
-        wordCount(linescp,stopwords);
+        String rep = "";
 
+        Scanner sc = new Scanner(System.in);
+
+        while (!rep.equals("1") && !rep.equals("2") && !rep.equals("3")) {
+
+            System.out.println("Faite votre choix :");
+            System.out.println("1 - Fichiers cp et cf");
+            System.out.println("2 - Fichiers cp");
+            System.out.println("3 - Fichiers cf");
+
+            rep = sc.nextLine();
+        }
+
+
+        if(rep.equals("1")){
+            System.out.println("Chargement des fichiers cf et cp :");
+            //Etape 1 : Parsing des .txt et des stopwords en JavaRDD pour travailler dessus
+            JavaRDD<String> linescf = spark.read().textFile("src/main/resources/cf/*").javaRDD();
+            JavaRDD<String> linescp = spark.read().textFile("src/main/resources/cp/*").javaRDD();
+
+            wordCount(linescf,stopwords);
+            wordCount(linescp,stopwords);
+        } else if (rep.equals("3")) {
+            System.out.println("Chargement des fichiers cf :");
+            JavaRDD<String> linescf = spark.read().textFile("src/main/resources/cf/*").javaRDD();
+            wordCount(linescf,stopwords);
+        } else {
+            System.out.println("Chargement des fichiers cp :");
+            JavaRDD<String> linescp = spark.read().textFile("src/main/resources/cp/*").javaRDD();
+            wordCount(linescp,stopwords);
+        }
         spark.stop();
     }
 
