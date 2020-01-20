@@ -112,7 +112,7 @@ de tirer un certain nombre de données d'une base de document assez rapidement.
 
 Et en ce qui concerne la seconde partie, elle va quand à elle permettre une étude plus poussée de ces différents documents avec diverses recherches. Par exemple,
 sur la fréquence d'appartition d'un ensemble de mot sur des documents, avec des résultats triés en fonction du support. Il correspond à la fraction à laquelle doit correspondre l'appartition de cette ensemble dans les différents documents.
-Ou alors, la recherche peut aussi se porter sur la confidence. Qui cherche montrer l'implication d'un mot par apport à un autre, c'est à dire la présence d'un mot si un premier mot défini est apparu.
+Ou alors, la recherche peut aussi se porter sur la confidence. Qui cherche à montrer l'implication d'un mot par apport à un autre, c'est à dire la présence d'un mot si un premier mot défini est apparu.
 
 #### Diffucltés
 La plus grosse difficulté était de comprendre et d'utiliser les différents fonctionnalités de Spark, et ce à cause d'une documentation peut explicite. Mais grâce à diverses exemples, nous
