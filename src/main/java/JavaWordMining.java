@@ -139,6 +139,20 @@ public final class JavaWordMining {
 
         }
 
+        int nbLigne = -1;
+
+        while( nbLigne <= 0) {
+
+            System.out.println("Nombre de ligne à afficher (supérieur à 0) :");
+
+            String  r = sc.nextLine();
+
+            try {
+                nbLigne = Integer.parseInt(r);
+            } catch (NumberFormatException e) {
+            }
+        }
+
         FPGrowthModel model;
 
         if(rep.equals("1")) {
@@ -147,7 +161,7 @@ public final class JavaWordMining {
                     .setItemsCol("new")
                     .setMinSupport(value)
                     .fit(lines);
-            model.freqItemsets().orderBy(functions.col("freq").desc()).show(false);
+            model.freqItemsets().orderBy(functions.col("freq").desc()).show(nbLigne,false);
 
         } else {
             //Application de FPGrowth
