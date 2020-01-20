@@ -48,7 +48,7 @@ Puis on applique un filtre afin de ne pas garder les différents nombres présen
 
 ## Résultats
 
-# Partie Top 10
+### Partie Top 10
 Pour les fichiers CF :<br>
 ![image info](./img/cftop10.png)
 
