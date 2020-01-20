@@ -128,7 +128,7 @@ public final class JavaWordMining {
 
         while (value <= 0 || value > 1  ) {
 
-            System.out.println("Entrez une valeur supérieur à 0 et 1 :");
+            System.out.println("Entrez une valeur supérieure à 0 et 1 :");
 
             String  r = sc.nextLine();
 
@@ -143,7 +143,7 @@ public final class JavaWordMining {
 
         while( nbLigne <= 0) {
 
-            System.out.println("Nombre de ligne à afficher (supérieur à 0) :");
+            System.out.println("Nombre de lignes à afficher (supérieur à 0) :");
 
             String  r = sc.nextLine();
 
