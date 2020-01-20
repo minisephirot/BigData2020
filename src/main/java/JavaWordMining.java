@@ -82,7 +82,7 @@ public final class JavaWordMining {
             wordMining(cf,spark,remover);
         }
 
-
+        SparkSession.clearActiveSession();
         spark.stop();
     }
 
@@ -161,7 +161,7 @@ public final class JavaWordMining {
                     .setItemsCol("new")
                     .setMinSupport(value)
                     .fit(lines);
-            model.freqItemsets().orderBy(functions.col("freq").desc()).show(nbLigne,false);
+            model.freqItemsets().show(nbLigne,false);
 
         } else {
             //Application de FPGrowth
@@ -170,7 +170,7 @@ public final class JavaWordMining {
                     .setMinConfidence(value)
                     .fit(lines);
 
-            model.associationRules().orderBy(functions.col("confidence").desc()).show(false);
+            model.associationRules().show(false);
 
         }
 
