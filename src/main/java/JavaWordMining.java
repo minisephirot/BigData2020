@@ -63,24 +63,16 @@ public final class JavaWordMining {
 
         Scanner sc = new Scanner(System.in);
 
-        while (!rep.equals("1") && !rep.equals("2") && !rep.equals("3")) {
+        while (!rep.equals("1") && !rep.equals("2")) {
 
             System.out.println("Faite votre choix :");
-            System.out.println("1 - Fichiers cp et cf");
-            System.out.println("2 - Fichiers cp");
-            System.out.println("3 - Fichiers cf");
+            System.out.println("1 - Fichiers cp");
+            System.out.println("2 - Fichiers cf");
 
             rep = sc.nextLine();
         }
-
-        if(rep.equals("1")){
-            //Etape 1 : Parsing des .txt et des stopwords en transactions pour travailler dessus, on retirera aussi la ponctuation et les espaces vides
-            File cf = new File("src/main/resources/cf");
-            File cp = new File("src/main/resources/cp");
-
-            wordMining(cf,spark,remover);
-            wordMining(cp,spark,remover);
-        } else if(rep.equals("2")) {
+        
+        if(rep.equals("1")) {
             File cp = new File("src/main/resources/cp");
 
             wordMining(cp,spark,remover);
