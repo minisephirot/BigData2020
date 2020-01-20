@@ -13,9 +13,11 @@ Nous avons fais chacun une moitié de l'exercice et avons passé l'autre moitié
 |        Fichiers        |Description                          
 |----------------|-------------------------------|
 |   src/main         |            Dossier des sources
+|img          |Dossier des ressources du README.MD
 |BigData2020.iml          |Fichier de projet de l'IDE         
 |FrequentMining.pdf          |Le sujet du projet
 |pom.xml          |Le fichier de dépendances Maven
+|trace_exec_top10.txt          |Trace d'execution complète du top10
 
 **Les sources se divisent en deux dossiers :**
 - **java** : les sources du programme, se divise en deux fichiers :
