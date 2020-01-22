@@ -18,6 +18,8 @@ Nous avons fais chacun une moitié de l'exercice et avons passé l'autre moitié
 |FrequentMining.pdf          |Le sujet du projet
 |pom.xml          |Le fichier de dépendances Maven
 |trace_exec_top10.txt          |Trace d'execution complète du top10
+|trace_exec_mining.txt          |Trace d'execution complète du mining
+
 
 **Les sources se divisent en deux dossiers :**
 - **java** : les sources du programme, se divise en deux fichiers :
@@ -124,13 +126,13 @@ Pour les fichiers CP :<br>
 
 ### Partie Mining
 
-** Le set de données utilisé est : dossier cf, minsupp = 0.5, minconf = 0.5. **
+**Le set de données utilisé est : dossier cf, minsupp = 0.5, minconf = 0.5.**
 
 ![image info](./img/support05.png)
 
 ![image info](./img/confidence05.png)
 
-** Le set de données utilisé est : dossier cp, minsupp = 0.8, minconf = 0.2. **
+**Le set de données utilisé est : dossier cp, minsupp = 0.8, minconf = 0.2.**
 
 ![image info](./img/support08.png)
 
