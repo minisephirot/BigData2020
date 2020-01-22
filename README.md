@@ -124,13 +124,18 @@ Pour les fichiers CP :<br>
 
 ### Partie Mining
 
-** Le set de données utilisées est : dossier cf, minsupp = 0.5, minconf = 0.5. **
+** Le set de données utilisé est : dossier cf, minsupp = 0.5, minconf = 0.5. **
 
-Pour les fichiers CF :<br>
 ![image info](./img/support05.png)
 
-Pour les fichiers CP :<br>
 ![image info](./img/confidence05.png)
+
+** Le set de données utilisé est : dossier cp, minsupp = 0.8, minconf = 0.2. **
+
+![image info](./img/support08.png)
+
+![image info](./img/confidence02.png)
+
 
 ## Observations et difficultés
 
@@ -139,12 +144,11 @@ Pour les fichiers CP :<br>
 Pour la première partie on voit directement que Spark permet un traitement rapide de nombreux fichiers. Cela permet
 de tirer une grande quantité de données d'une base de document assez rapidement.
 
-Et en ce qui concerne la seconde partie, elle va permettre une étude plus poussée de ces différents documents avec diverses recherches. 
-Par exemple,sur la fréquence d'apparition d'un ensemble de mot sur des documents, avec des résultats triés en fonction du support. Il correspond à la fraction à laquelle doit correspondre l'apparition de cette ensemble dans les différents documents.
+En ce qui concerne la seconde partie, elle va permettre une étude plus poussée de ces différents documents avec diverses recherches. Par exemple,sur la fréquence d'apparition d'un ensemble de mot sur des documents, avec des résultats triés en fonction du support. Il correspond à la fraction à laquelle doit correspondre l'apparition de cette ensemble dans les différents documents.
 
 De par la définition de minsupport, plus on s'approche de zéro plus la quantitée de donnée à traiter de données augmente.
 
-Ou alors, la recherche peut aussi se porter sur la confiance. Elle cherche à montrer l'implication d'un mot par rapport à un autre, c'est à dire la probabilité de présence d'un mot si un premier mot défini est apparu.
+La recherche peut aussi se porter sur la confiance. Elle cherche à montrer l'implication d'un mot par rapport à un autre, c'est à dire la probabilité de présence d'un mot si un premier mot défini est apparu.
 
 #### Difficultés
 
