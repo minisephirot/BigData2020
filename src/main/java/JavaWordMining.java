@@ -25,31 +25,62 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class JavaWordMining {
 
     private static final Pattern SPACE = Pattern.compile("\\s+");
-    private static final double minsup = 0.5;
-    private static final double minconf = 0.5;
+    private static double minsup = 0.5;
+    private static double minconf = 0.5;
+    private static int nbline = 20;
+    private static String path = "";
+
+    static void printUsage(){
+        System.out.println("Usage : java JavaWordMining $1 $2 $3 $4 where $X is :\n " +
+                "\t $1 : cf or cp, the ressource folder used, required \n" +
+                "\t $2 : number of line to display, if missing = 20. \n" +
+                "\t $3 : minsup parameter between [0:1], if missing = 0.5. \n" +
+                "\t $4 : minconf parameter between [0:1], if missing = 0.5. \n");
+        System.exit(0);
+    }
 
     public static void main(String[] args) throws IOException {
 
-        System.setProperty("hadoop.home.dir", "C:\\winutil\\");
+        if (args.length != 1 && args.length != 4 ){
+            printUsage();
+        }
 
+        if (args[0].equalsIgnoreCase("cf")) path = "src/main/resources/cf";
+        if (args[0].equalsIgnoreCase("cp")) path = "src/main/resources/cp";
+        if (path.isEmpty()) printUsage();
+
+        if (args.length == 4){
+            nbline = Integer.parseInt(args[1]);
+            minsup = Double.parseDouble(args[2]);
+            minconf = Double.parseDouble(args[3]);
+            System.out.println("Going throught "+ path +" folder with [minsup,minconf] = ["+minsup+","+minconf+"].");
+        }
+
+        System.setProperty("hadoop.home.dir", "C:\\winutil\\");
         //Démarrage de Spark en Java
         SparkSession spark = SparkSession
                 .builder()
-                .appName("JavaWordCount")
+                .appName("JavaWordMining")
                 .config("spark.master", "local")
                 .getOrCreate();
 
+        //Etape 1 : Parsing des .txt et des stopwords en transactions pour travailler dessus, on retirera aussi la ponctuation et les espaces vides
+        File c = new File(path);
+
         //Etape 2: Filtrage des stopwords dans chaques transactions
-        String load = new String(Files.readAllBytes(Paths.get("src/main/resources/french-stopwords.txt")));
+        String loadsw = new String(Files.readAllBytes(Paths.get("src/main/resources/french-stopwords.txt")));
         //Transformation en tableau de string pour chaque mot
-        List<String> stopwords = Arrays.asList(SPACE.split(load));
+        List<String> stopwords = Arrays.asList(SPACE.split(loadsw));
 
         //Classe faite pour retirer les stopwords
         StopWordsRemover remover = new StopWordsRemover();
@@ -59,37 +90,8 @@ public final class JavaWordMining {
         //Définition de la colonne crée à la fin
         remover.setOutputCol("new");
 
-        String rep = "";
-
-        Scanner sc = new Scanner(System.in);
-
-        while (!rep.equals("1") && !rep.equals("2")) {
-
-            System.out.println("Faite votre choix :");
-            System.out.println("1 - Fichiers cp");
-            System.out.println("2 - Fichiers cf");
-
-            rep = sc.nextLine();
-        }
-        
-        if(rep.equals("1")) {
-            File cp = new File("src/main/resources/cp");
-
-            wordMining(cp,spark,remover);
-        } else {
-            File cf = new File("src/main/resources/cf");
-
-            wordMining(cf,spark,remover);
-        }
-
-        SparkSession.clearActiveSession();
-        spark.stop();
-    }
-
-    static void wordMining(File folder, SparkSession spark, StopWordsRemover remover) throws IOException {
-
         ArrayList<Row> tab = new ArrayList<>();
-        for (File f: Objects.requireNonNull(folder.listFiles())) {
+        for (File f: Objects.requireNonNull(c.listFiles())) {
             String load = new String(Files.readAllBytes(Paths.get(f.getPath())));
             //Remplacement des caractère ne faisant pas partie des mots
             load = load.replaceAll("[^/ éèàù’\\w]","").replaceAll("\\d","");
@@ -109,72 +111,17 @@ public final class JavaWordMining {
         //Drop de l'ancienne colonne
         lines = lines.drop("items");
 
-
-
-        String rep = "";
-
-        Scanner sc = new Scanner(System.in);
-
-        while (!rep.equals("1") && !rep.equals("2")) {
-
-            System.out.println("Faite votre choix :");
-            System.out.println("1 - Min support");
-            System.out.println("2 - Min Confidence");
-
-            rep = sc.nextLine();
-        }
-
-        float value = -1;
-
-        while (value <= 0 || value > 1  ) {
-
-            System.out.println("Entrez une valeur supérieure à 0 et 1 :");
-
-            String  r = sc.nextLine();
-
-            try {
-                value = Float.parseFloat(r);
-            } catch (NumberFormatException e) {
-            }
-
-        }
-
-        int nbLigne = -1;
-
-        while( nbLigne <= 0) {
-
-            System.out.println("Nombre de lignes à afficher (supérieur à 0) :");
-
-            String  r = sc.nextLine();
-
-            try {
-                nbLigne = Integer.parseInt(r);
-            } catch (NumberFormatException e) {
-            }
-        }
-
-        FPGrowthModel model;
-
-        if(rep.equals("1")) {
-            //Application de FPGrowth
-            model = new FPGrowth()
-                    .setItemsCol("new")
-                    .setMinSupport(value)
-                    .fit(lines);
-            model.freqItemsets().show(nbLigne,false);
-
-        } else {
-            //Application de FPGrowth
-            model = new FPGrowth()
-                    .setItemsCol("new")
-                    .setMinConfidence(value)
-                    .fit(lines);
-
-            model.associationRules().show(false);
-
-        }
+        //Application de FPGrowth
+        FPGrowthModel model = new FPGrowth()
+                .setItemsCol("new")
+                .setMinSupport(minsup)
+                .setMinConfidence(minconf)
+                .fit(lines);
 
         //Affichage.
-    }
+        model.freqItemsets().orderBy(functions.col("freq").desc()).show(nbline,false);
+        model.associationRules().orderBy(functions.col("confidence").desc()).show(nbline,false);
 
+        spark.stop();
+    }
 }
