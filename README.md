@@ -30,13 +30,14 @@ Nous avons fais chacun une moitié de l'exercice et avons passé l'autre moitié
 
 ## Utilisation
 
-**Le plus simple est d'ouvrir le projet dans un IDE,** sans vous pouvez faire comme suis :
+**Le plus simple est d'ouvrir le projet dans un IDE**<br> 
+Sans IDE vous pouvez faire comme suis :
 
-Vous rendre dans la racine du projet
+Se rendre dans la racine du projet:
 
       mvn clean install
-Chargera les dépendances du fichier Maven.
-Une fois terminé, charger les dépendances dans un jar :
+La commande chargera les dépendances du fichier Maven.
+Une fois terminé, enregistrez les dépendances dans un jar :
 
       mvn dependency:copy-dependencies
 La commande compilera toute les dépendances dans un jar dans le dossier target/dependency.
@@ -136,16 +137,22 @@ Pour les fichiers CP :<br>
 #### Observations
 
 Pour la première partie on voit directement que Spark permet un traitement rapide de nombreux fichiers. Cela permet
-de tirer une grande quantitée de données d'une base de document assez rapidement.
-Et en ce qui concerne la seconde partie, elle va quand à elle permettre une étude plus poussée de ces différents documents avec diverses recherches. 
-Par exemple,sur la fréquence d'appartition d'un ensemble de mot sur des documents, avec des résultats triés en fonction du support. Il correspond à la fraction à laquelle doit correspondre l'appartition de cette ensemble dans les différents documents.
-Ou alors, la recherche peut aussi se porter sur la confiance. Qui cherche à montrer l'implication d'un mot par apport à un autre, c'est à dire la probabilitée de présence d'un mot si un premier mot défini est apparu.
+de tirer une grande quantité de données d'une base de document assez rapidement.
 
-#### Diffucltés
+Et en ce qui concerne la seconde partie, elle va permettre une étude plus poussée de ces différents documents avec diverses recherches. 
+Par exemple,sur la fréquence d'apparition d'un ensemble de mot sur des documents, avec des résultats triés en fonction du support. Il correspond à la fraction à laquelle doit correspondre l'apparition de cette ensemble dans les différents documents.
 
-La plus grosse difficulté était de comprendre et d'utiliser les différents fonctionnalités de Spark, et ce à cause d'une documentation peut explicite. 
-Mais grâce à diverses exemples, nous avons fini par réussir à utiliser cette outil. Les points de développement qui nous ont particulièrement posé problème sont l'utilisation des Dataset et leur initialisation en plusieurs transactions.
+De par la définition de minsupport, plus on s'approche de zéro plus la quantitée de donnée à traiter de données augmente.
+
+Ou alors, la recherche peut aussi se porter sur la confiance. Elle cherche à montrer l'implication d'un mot par rapport à un autre, c'est à dire la probabilité de présence d'un mot si un premier mot défini est apparu.
+
+#### Difficultés
+
+La plus grosse difficulté était de comprendre et d'utiliser les différentes fonctionnalités de Spark, ce à cause d'une documentation pour certaines classes minimalistes. Cependant grâce à divers exemples nous nous sommes appropriés l'outil. 
+Certains points nous ont posés problèmes :
+* Au début, nous pensions que la longueur d’exécution sur un minsupp faible venait de notre programme alors qu'en réalité c'est la quantité de donnée qui empêche notre programme de terminer (avec des erreurs de type "not enough Java heap memory).
+* Certains problèmes "mêta" du projet, comme définir le chemin d'accès de hadoop que nous avons dû spécifier en dur, des dépendances inaccessibles dans le scope de la compilation etc.
 
 ## Conclusion
 
-Pour conclure, Spark est un outil très puissant, permettant l'analyse et le traitement de fichiers, malgré une prise en main laborieuse. On a pu à partir de ce TP voir deux méthodes pour charger des documents dans Spark avec les JavaRDD et les Dataset. Ils permettent par la suite une étude différente d'un ensemble de documents. La première permet une description du contenu tandis que la deuxième va permettre une analyse et une comparaison des contenus des différents documents.
+En conclusion Spark est un outil très puissant, permettant l'analyse et le traitement de fichiers, malgré une prise en main laborieuse. On a pu à partir de ce TP voir deux méthodes pour charger des documents dans Spark avec les JavaRDD et les Dataset. Ils permettent par la suite une étude différente d'un ensemble de documents. La première permet une description du contenu tandis que la deuxième va permettre une analyse et une comparaison des contenus des différents documents.
