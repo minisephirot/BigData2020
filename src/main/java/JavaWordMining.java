@@ -18,8 +18,11 @@
 import org.apache.spark.ml.feature.StopWordsRemover;
 import org.apache.spark.ml.fpm.FPGrowth;
 import org.apache.spark.ml.fpm.FPGrowthModel;
+import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.*;
+import scala.collection.Iterator;
+import scala.collection.Map;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,7 +54,7 @@ public final class JavaWordMining {
 
     public static void main(String[] args) throws IOException {
 
-        if (args.length != 1 && args.length != 4 ){
+        if (args.length < 1 || args.length > 4 ){
             printUsage();
         }
 
@@ -59,12 +62,10 @@ public final class JavaWordMining {
         if (args[0].equalsIgnoreCase("cp")) path = "src/main/resources/cp";
         if (path.isEmpty()) printUsage();
 
-        if (args.length == 4){
-            nbline = Integer.parseInt(args[1]);
-            minsup = Double.parseDouble(args[2]);
-            minconf = Double.parseDouble(args[3]);
-            System.out.println("Going throught "+ path +" folder with [minsup,minconf] = ["+minsup+","+minconf+"].");
-        }
+        if (args.length >= 2) nbline = Integer.parseInt(args[1]);
+        if (args.length >= 3) minsup = Double.parseDouble(args[2]);
+        if (args.length >= 4) minconf = Double.parseDouble(args[3]);
+        System.out.println("Going throught "+ path +" folder with [minsup,minconf,nbline] = ["+minsup+","+minconf+","+nbline+"].");
 
         System.setProperty("hadoop.home.dir", "C:\\winutil\\");
         //Démarrage de Spark en Java
@@ -73,6 +74,11 @@ public final class JavaWordMining {
                 .appName("JavaWordMining")
                 .config("spark.master", "local")
                 .getOrCreate();
+
+        //Nettoie les rdd précédentes
+        Map<Object, RDD<?>> persistentRDDS = spark.sparkContext().getPersistentRDDs();
+        for (Iterator<RDD<?>> iterator = persistentRDDS.values().iterator(); iterator.hasNext();)
+            iterator.next().unpersist(true);
 
         //Etape 1 : Parsing des .txt et des stopwords en transactions pour travailler dessus, on retirera aussi la ponctuation et les espaces vides
         File c = new File(path);
@@ -122,6 +128,7 @@ public final class JavaWordMining {
         model.freqItemsets().orderBy(functions.col("freq").desc()).show(nbline,false);
         model.associationRules().orderBy(functions.col("confidence").desc()).show(nbline,false);
 
+        lines.unpersist();
         spark.stop();
     }
 }
