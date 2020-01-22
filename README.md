@@ -30,7 +30,25 @@ Nous avons fais chacun une moitié de l'exercice et avons passé l'autre moitié
 
 ## Utilisation
 
-Pour pouvoir utiliser notre travail il suffit de compiler le projet le reste étant proposé dans la console après l'éxécution.
+**Le plus simple est d'ouvrir le projet dans un IDE,** sans vous pouvez faire comme suis :
+
+Vous rendre dans la racine du projet
+
+      mvn clean install
+Chargera les dépendances du fichier Maven.
+Une fois terminé, charger les dépendances dans un jar :
+
+      mvn dependency:copy-dependencies
+La commande compilera toute les dépendances dans un jar dans le dossier target/dependency.
+
+On peut désormais run les classes en utilisant les commandes :
+
+    cd target/
+    java -cp *nom du jar*.jar:dependency *nom de la classe (JavaWordMining / JavaWordCount)*
+
+-cp définis un class path pour utiliser les classes des dépendances.<br>
+Note: ":" pour Linux/Mac , Windows utilisez ";".
+
 
 ## Fonctionnement
 Pour chaque partie, la première étape est de créer une session Spark pour les différentes manipulations.
@@ -43,21 +61,21 @@ On commence par créer une **JavaRDD** à partir des différents fichiers que l'
 
 On peut, grâce à '*' lire l'integralité des fichiers présents à l'endroit du chemin renseigné.
 De la  même manière, nous chargeons la liste des mots à retirer des différents documents. On ajoute à cette liste tous
-les mots déjâ présent mais avec une majuscule afin de ne pas avoir de soucis de casse :
+les mots déjâ présent mais avec une majuscule afin de ne pas avoir de problèmes de casse :
 
     stopwords = stopwords.union(stopwords.map(StringUtils::capitalize));
 
 Ensuite, nous transformons les documents afin d'obtenir un tableau de String. Pour ce faire, on sépare le contenu des documents de base
-en fonction de la regex suivante `\s` qui détecte tous les genres d'espace blanc.
+en fonction de la regex suivante `\s` qui détecte tous types d'espace blanc.
 
-Puis on applique un filtre afin de ne pas garder les différents nombres présents ainsi que les mots vides. Un fois les filtres faits on retire des documents les mots du fichier stopwords :
+Puis on applique un filtre afin de ne pas garder les différents nombres présents ainsi que les valeurs vides. Un fois le filtrage fait on soustrait des valeurs les mots du fichier stopwords :
 
     words = words.subtract(stopwords);
 
-On associe ensuite une occurence à chaque mot pour pouvoir comptabiliser
+On associe ensuite une occurence à chaque mot pour pouvoir les comptabiliser:
 
     JavaPairRDD<String, Integer> ones = words.mapToPair(s -> new Tuple2<>(s, 1));
-Puis on somme les occurences sur les clés
+Puis on somme les occurences sur les clé:
     
     JavaPairRDD<String, Integer> counts = ones.reduceByKey(Integer::sum);
 
@@ -80,8 +98,8 @@ Et ajoutons par la suite l'ensemble des transactions à notre session Spark :
 
     Dataset<Row> lines = spark.createDataFrame(tab, schema);
     
-Après cela, comme pour la première partie, il faut retirer des documents les mots du stopwords. Pour cela, on utilise la classe StopWordsRemover de la 
-bibliotèque Spark, qui permet, à partir d'une liste de String, de les retirer d'un Dataset.
+Après cela, comme pour la première partie, il faut retirer des documents les mots du stopwords.<br>
+Pour cela, on utilise la classe StopWordsRemover de la bibliotèque Spark, qui permet, à partir d'une liste de String, de les retirer d'un Dataset.
 
     StopWordsRemover remover = new StopWordsRemover();
     remover.setStopWords((String[]) stopwords.toArray());
@@ -89,7 +107,7 @@ bibliotèque Spark, qui permet, à partir d'une liste de String, de les retirer 
     
 Ensuite, il faut choisir soit d'utiliser le "frequent itemset mining algorithm" en variant le support, soit, 
 d'utiliser l'"association rules algorithm " en variant la confidence. Et on classe les différents résultats par
- odre de fréquence pour le premier et par apport à la confidence pour le deuxième
+odre de fréquence pour le premier et par rapport à la confiance pour le deuxième.
 
     model.freqItemsets().orderBy(functions.col("freq").desc()).show(false);
     model.associationRules().orderBy(functions.col("confidence").desc()).show(false); 
@@ -103,26 +121,31 @@ Pour les fichiers CF :<br>
 Pour les fichiers CP :<br>
 ![image info](./img/cptop10.png)
 
+### Partie Mining
+
+** Le set de données utilisées est : dossier cf, minsupp = 0.5, minconf = 0.5. **
+
+Pour les fichiers CF :<br>
+![image info](./img/support05.png)
+
+Pour les fichiers CP :<br>
+![image info](./img/confidence05.png)
+
 ## Observations et difficultés
 
 #### Observations
 
-Pour la première partie il n'y a pas grand chose à dire à part que Spark permet un traitement rapide de nombreux fichiers. Cela permet
-de tirer un certain nombre de données d'une base de document assez rapidement.
-
-Et en ce qui concerne la seconde partie, elle va quand à elle permettre une étude plus poussée de ces différents documents avec diverses recherches. Par exemple,
-sur la fréquence d'appartition d'un ensemble de mot sur des documents, avec des résultats triés en fonction du support. Il correspond à la fraction à laquelle doit correspondre l'appartition de cette ensemble dans les différents documents.
-Ou alors, la recherche peut aussi se porter sur la confidence. Qui cherche à montrer l'implication d'un mot par apport à un autre, c'est à dire la présence d'un mot si un premier mot défini est apparu.
+Pour la première partie on voit directement que Spark permet un traitement rapide de nombreux fichiers. Cela permet
+de tirer une grande quantitée de données d'une base de document assez rapidement.
+Et en ce qui concerne la seconde partie, elle va quand à elle permettre une étude plus poussée de ces différents documents avec diverses recherches. 
+Par exemple,sur la fréquence d'appartition d'un ensemble de mot sur des documents, avec des résultats triés en fonction du support. Il correspond à la fraction à laquelle doit correspondre l'appartition de cette ensemble dans les différents documents.
+Ou alors, la recherche peut aussi se porter sur la confiance. Qui cherche à montrer l'implication d'un mot par apport à un autre, c'est à dire la probabilitée de présence d'un mot si un premier mot défini est apparu.
 
 #### Diffucltés
-La plus grosse difficulté était de comprendre et d'utiliser les différents fonctionnalités de Spark, et ce à cause d'une documentation peut explicite. Mais grâce à diverses exemples, nous
-avons fini par réussir à utiliser cette outil. Les points de développement qui nous ont particulièrement posé problème sont l'utilisation des Dataset et leur initialisation en plusieurs transactions.
 
-
+La plus grosse difficulté était de comprendre et d'utiliser les différents fonctionnalités de Spark, et ce à cause d'une documentation peut explicite. 
+Mais grâce à diverses exemples, nous avons fini par réussir à utiliser cette outil. Les points de développement qui nous ont particulièrement posé problème sont l'utilisation des Dataset et leur initialisation en plusieurs transactions.
 
 ## Conclusion
 
-Pour conclure, Spark est un outil trés puissant, permettant l'analyse et le traitement de fichiers texte, malgré une prise en main laborieuse. On a pu à partir de ce TP voir deux méthodes pour charger des 
-documents dans Spark avec les JavaRDD et les Dataset. Qui permettent par la suite une étude différente d'un ensemble de documents. La prémières permet une description du contenu tandis que la deuxième va permettre une analyse et une comparaison des contenus des différents documents.
-
-
+Pour conclure, Spark est un outil très puissant, permettant l'analyse et le traitement de fichiers, malgré une prise en main laborieuse. On a pu à partir de ce TP voir deux méthodes pour charger des documents dans Spark avec les JavaRDD et les Dataset. Ils permettent par la suite une étude différente d'un ensemble de documents. La première permet une description du contenu tandis que la deuxième va permettre une analyse et une comparaison des contenus des différents documents.
